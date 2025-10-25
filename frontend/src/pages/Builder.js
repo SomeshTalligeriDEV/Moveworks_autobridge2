@@ -293,14 +293,10 @@ error_handling:
                             Download
                           </motion.button>
                         </div>
-                        <div className="rounded-xl overflow-hidden" style={{ maxHeight: '600px', overflowY: 'auto' }}>
-                          <SyntaxHighlighter
-                            language="yaml"
-                            style={vscDarkPlus}
-                            customStyle={{ margin: 0, borderRadius: '12px', fontSize: '14px' }}
-                          >
+                        <div className="rounded-xl overflow-hidden p-4" style={{ maxHeight: '600px', overflowY: 'auto', background: '#1e1e1e' }}>
+                          <pre className="text-sm" style={{ color: '#d4d4d4', fontFamily: 'monospace', margin: 0 }}>
                             {generatedYAML}
-                          </SyntaxHighlighter>
+                          </pre>
                         </div>
                       </>
                     ) : (
