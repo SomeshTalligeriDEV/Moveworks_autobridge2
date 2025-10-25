@@ -65,7 +65,8 @@ const Scene3D = () => {
         
         {/* Central Hub */}
         <Float speed={1.5} rotationIntensity={0.3} floatIntensity={0.3}>
-          <RoundedBox args={[2, 2, 2]} radius={0.2} smoothness={4} position={[0, 0, 0]}>
+          <mesh position={[0, 0, 0]}>
+            <boxGeometry args={[2, 2, 2]} />
             <meshStandardMaterial
               color="#FF8B7B"
               roughness={0.1}
@@ -73,7 +74,7 @@ const Scene3D = () => {
               emissive="#FF8B7B"
               emissiveIntensity={0.3}
             />
-          </RoundedBox>
+          </mesh>
         </Float>
 
         {/* Orbiting Cubes */}
