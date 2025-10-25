@@ -1,11 +1,19 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import Scene3D from '../components/Scene3D';
 import { Zap, Shield, TrendingUp, ArrowRight, Github, Slack, Code2, Boxes } from 'lucide-react';
 
 const LandingPage = () => {
   const navigate = useNavigate();
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      setMousePosition({ x: e.clientX, y: e.clientY });
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
 
   const features = [
     {
@@ -40,6 +48,22 @@ const LandingPage = () => {
 
   return (
     <div className="landing-page" style={{ background: '#fefefe' }}>
+      {/* Floating cursor */}
+      <motion.div
+        className="fixed w-4 h-4 rounded-full pointer-events-none z-50 mix-blend-difference"
+        style={{
+          background: 'white',
+          left: mousePosition.x - 8,
+          top: mousePosition.y - 8,
+        }}
+        animate={{
+          scale: [1, 1.5, 1],
+        }}
+        transition={{
+          duration: 0.3,
+        }}
+      />
+
       {/* Navigation */}
       <motion.nav
         initial={{ y: -100, opacity: 0 }}
@@ -166,21 +190,32 @@ const LandingPage = () => {
               </div>
             </motion.div>
 
-            {/* Right - 3D Scene */}
+            {/* Right - Video Background */}
             <motion.div
               initial={{ x: 100, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              className="relative h-[500px] lg:h-[600px]"
+              className="relative h-[500px] lg:h-[600px] rounded-3xl overflow-hidden"
+              style={{
+                background: 'linear-gradient(135deg, rgba(255, 139, 123, 0.1) 0%, rgba(255, 169, 150, 0.1) 100%)',
+                border: '1px solid rgba(255, 139, 123, 0.2)',
+                boxShadow: '0 20px 60px rgba(255, 139, 123, 0.2)'
+              }}
             >
-              <Scene3D />
+              <video
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="absolute inset-0 w-full h-full object-cover"
+                style={{ filter: 'brightness(1.1) contrast(1.1)' }}
+              >
+                <source src="/home.mp4" type="video/mp4" />
+              </video>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
             </motion.div>
           </div>
         </div>
-
-        {/* Decorative Elements */}
-        <div className="absolute top-20 right-20 w-72 h-72 rounded-full opacity-20 blur-3xl" style={{ background: '#FFB8A8' }}></div>
-        <div className="absolute bottom-20 left-20 w-96 h-96 rounded-full opacity-20 blur-3xl" style={{ background: '#FFA996' }}></div>
       </section>
 
       {/* Features Section */}
