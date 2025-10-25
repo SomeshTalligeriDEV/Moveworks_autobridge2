@@ -1,96 +1,140 @@
-import React, { useRef } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Float } from '@react-three/drei';
-
-const RotatingCube = ({ position, color, scale = 1 }) => {
-  const meshRef = useRef();
-  
-  useFrame((state) => {
-    if (meshRef.current) {
-      meshRef.current.rotation.x += 0.01;
-      meshRef.current.rotation.y += 0.01;
-      meshRef.current.position.y = position[1] + Math.sin(state.clock.elapsedTime) * 0.2;
-    }
-  });
-  
-  return (
-    <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>
-      <mesh
-        ref={meshRef}
-        position={position}
-        scale={[scale, scale, scale]}
-      >
-        <boxGeometry args={[1, 1, 1]} />
-        <meshStandardMaterial
-          color={color}
-          roughness={0.2}
-          metalness={0.8}
-        />
-      </mesh>
-    </Float>
-  );
-};
-
-const ConnectorLine = ({ start, end }) => {
-  const points = React.useMemo(() => {
-    return [start, end];
-  }, [start, end]);
-  
-  return (
-    <line>
-      <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          count={points.length}
-          array={new Float32Array(points.flat())}
-          itemSize={3}
-        />
-      </bufferGeometry>
-      <lineBasicMaterial color="#FF8B7B" />
-    </line>
-  );
-};
+import React from 'react';
+import { motion } from 'framer-motion';
 
 const Scene3D = () => {
   return (
-    <div style={{ width: '100%', height: '100%', background: 'transparent' }}>
-      <Canvas
-        camera={{ position: [0, 0, 8], fov: 50 }}
-        style={{ background: 'transparent' }}
+    <div className="relative w-full h-full flex items-center justify-center" style={{ perspective: '1000px' }}>
+      {/* Central Hub */}
+      <motion.div
+        animate={{
+          rotateX: [0, 360],
+          rotateY: [0, 360],
+        }}
+        transition={{
+          duration: 20,
+          repeat: Infinity,
+          ease: "linear"
+        }}
+        className="absolute"
+        style={{
+          width: '200px',
+          height: '200px',
+          transformStyle: 'preserve-3d'
+        }}
       >
-        <ambientLight intensity={0.5} />
-        <pointLight position={[10, 10, 10]} intensity={1} />
-        <pointLight position={[-10, -10, -10]} intensity={0.5} color="#FFB8A8" />
-        <spotLight position={[0, 10, 0]} angle={0.3} penumbra={1} intensity={1} castShadow />
+        <div
+          className="absolute inset-0 coral-gradient rounded-3xl"
+          style={{
+            boxShadow: '0 0 60px rgba(255, 139, 123, 0.6), 0 0 100px rgba(255, 139, 123, 0.4)',
+            transform: 'translateZ(0px)'
+          }}
+        />
+      </motion.div>
+
+      {/* Orbiting Cubes */}
+      {[0, 1, 2, 3].map((index) => {
+        const angle = (index * 90);
+        const radius = 180;
+        const x = Math.cos((angle * Math.PI) / 180) * radius;
+        const y = Math.sin((angle * Math.PI) / 180) * radius;
         
-        {/* Central Hub */}
-        <Float speed={1.5} rotationIntensity={0.3} floatIntensity={0.3}>
-          <mesh position={[0, 0, 0]}>
-            <boxGeometry args={[2, 2, 2]} />
-            <meshStandardMaterial
-              color="#FF8B7B"
-              roughness={0.1}
-              metalness={0.9}
-              emissive="#FF8B7B"
-              emissiveIntensity={0.3}
+        return (
+          <motion.div
+            key={index}
+            animate={{
+              rotateX: [0, 360],
+              rotateY: [0, 360],
+              y: [y - 20, y + 20, y - 20],
+            }}
+            transition={{
+              rotateX: { duration: 8 + index * 2, repeat: Infinity, ease: "linear" },
+              rotateY: { duration: 10 + index * 2, repeat: Infinity, ease: "linear" },
+              y: { duration: 3 + index * 0.5, repeat: Infinity, ease: "easeInOut" }
+            }}
+            className="absolute"
+            style={{
+              width: '80px',
+              height: '80px',
+              left: `calc(50% + ${x}px)`,
+              top: `calc(50% + ${y}px)`,
+              transform: 'translate(-50%, -50%)',
+              transformStyle: 'preserve-3d'
+            }}
+          >
+            <div
+              className="w-full h-full rounded-2xl"
+              style={{
+                background: `linear-gradient(135deg, ${
+                  index === 0 ? '#FFB8A8' : 
+                  index === 1 ? '#FFA996' : 
+                  index === 2 ? '#FF9F8E' : '#FFD6CC'
+                } 0%, ${
+                  index === 0 ? '#FFA996' : 
+                  index === 1 ? '#FF8B7B' : 
+                  index === 2 ? '#FFB8A8' : '#FFA996'
+                } 100%)`,
+                boxShadow: '0 10px 40px rgba(255, 139, 123, 0.3)',
+              }}
             />
-          </mesh>
-        </Float>
+          </motion.div>
+        );
+      })}
 
-        {/* Orbiting Cubes */}
-        <RotatingCube position={[-3, 1, 0]} color="#FFB8A8" scale={0.7} />
-        <RotatingCube position={[3, -1, 0]} color="#FFA996" scale={0.7} />
-        <RotatingCube position={[0, 2.5, -2]} color="#FF9F8E" scale={0.6} />
-        <RotatingCube position={[0, -2.5, 2]} color="#FFD6CC" scale={0.6} />
+      {/* Connecting Lines */}
+      <svg className="absolute inset-0 w-full h-full" style={{ pointerEvents: 'none' }}>
+        <defs>
+          <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#FF8B7B" stopOpacity="0.6" />
+            <stop offset="100%" stopColor="#FFA996" stopOpacity="0.2" />
+          </linearGradient>
+        </defs>
+        {[0, 1, 2, 3].map((index) => {
+          const angle = (index * 90);
+          const radius = 180;
+          const x = Math.cos((angle * Math.PI) / 180) * radius;
+          const y = Math.sin((angle * Math.PI) / 180) * radius;
+          
+          return (
+            <motion.line
+              key={index}
+              x1="50%"
+              y1="50%"
+              x2={`calc(50% + ${x}px)`}
+              y2={`calc(50% + ${y}px)`}
+              stroke="url(#lineGradient)"
+              strokeWidth="2"
+              initial={{ pathLength: 0, opacity: 0 }}
+              animate={{ pathLength: 1, opacity: 1 }}
+              transition={{ duration: 2, delay: index * 0.3 }}
+            />
+          );
+        })}
+      </svg>
 
-        {/* Connector Lines */}
-        <ConnectorLine start={[0, 0, 0]} end={[-3, 1, 0]} />
-        <ConnectorLine start={[0, 0, 0]} end={[3, -1, 0]} />
-        <ConnectorLine start={[0, 0, 0]} end={[0, 2.5, -2]} />
-        <ConnectorLine start={[0, 0, 0]} end={[0, -2.5, 2]} />
-
-        <OrbitControls enableZoom={false} enablePan={false} autoRotate autoRotateSpeed={0.5} />
-      </Canvas>
+      {/* Floating Particles */}
+      {[...Array(8)].map((_, index) => (
+        <motion.div
+          key={`particle-${index}`}
+          className="absolute w-2 h-2 rounded-full"
+          style={{
+            background: '#FFA996',
+            left: `${20 + (index * 10)}%`,
+            top: `${30 + ((index % 3) * 20)}%`,
+            boxShadow: '0 0 10px rgba(255, 139, 123, 0.8)'
+          }}
+          animate={{
+            y: [-20, 20, -20],
+            opacity: [0.3, 1, 0.3],
+            scale: [0.8, 1.2, 0.8]
+          }}
+          transition={{
+            duration: 3 + (index * 0.5),
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: index * 0.2
+          }}
+        />
+      ))}
     </div>
   );
 };
