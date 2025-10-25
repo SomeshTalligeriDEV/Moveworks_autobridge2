@@ -1,7 +1,6 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, RoundedBox, Float, Text3D, Center } from '@react-three/drei';
-import * as THREE from 'three';
+import { OrbitControls, Float } from '@react-three/drei';
 
 const RotatingCube = ({ position, color, scale = 1 }) => {
   const meshRef = useRef();
@@ -16,30 +15,38 @@ const RotatingCube = ({ position, color, scale = 1 }) => {
   
   return (
     <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>
-      <RoundedBox
+      <mesh
         ref={meshRef}
-        args={[1 * scale, 1 * scale, 1 * scale]}
         position={position}
-        radius={0.1}
-        smoothness={4}
+        scale={[scale, scale, scale]}
       >
+        <boxGeometry args={[1, 1, 1]} />
         <meshStandardMaterial
           color={color}
           roughness={0.2}
           metalness={0.8}
         />
-      </RoundedBox>
+      </mesh>
     </Float>
   );
 };
 
 const ConnectorLine = ({ start, end }) => {
-  const points = [new THREE.Vector3(...start), new THREE.Vector3(...end)];
-  const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
+  const points = React.useMemo(() => {
+    return [start, end];
+  }, [start, end]);
   
   return (
-    <line geometry={lineGeometry}>
-      <lineBasicMaterial attach="material" color="#FF8B7B" linewidth={2} />
+    <line>
+      <bufferGeometry>
+        <bufferAttribute
+          attach="attributes-position"
+          count={points.length}
+          array={new Float32Array(points.flat())}
+          itemSize={3}
+        />
+      </bufferGeometry>
+      <lineBasicMaterial color="#FF8B7B" />
     </line>
   );
 };
